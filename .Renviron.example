@@ -1,0 +1,7 @@
+# Copy to .Renviron and fill in. Never commit the real .Renviron.
+# See project summary "Infrastructure" section for the Jetstream2 SSH tunnel
+# setup these values assume.
+
+LLM_ENDPOINT=https://llm.jetstream-cloud.org:11435/gpt-oss-120b/v1/
+LLM_MODEL=gpt-oss-120b
+LLM_API_KEY=placeholder
