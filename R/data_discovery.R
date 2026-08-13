@@ -58,12 +58,12 @@ make_llm_chat <- function() {
   }
   endpoint <- Sys.getenv("LLM_ENDPOINT")
   model <- Sys.getenv("LLM_MODEL")
-  api_key <- Sys.getenv("LLM_API_KEY", "placeholder")
+  api_key <- "placeholder"
   if (!nzchar(endpoint) || !nzchar(model)) {
     stop("LLM_ENDPOINT and LLM_MODEL must be set (see .Renviron.example). ",
          "These point at the Jetstream2 SSH tunnel per the project summary.")
   }
-  ellmer::chat_openai(base_url = endpoint, model = model, api_key = api_key)
+  ellmer::chat_openai_compatible(base_url = endpoint, model = model, api_key = api_key)
 }
 
 # Minimal, dependency-free JSON object parser for the fixed 4-field schema
@@ -126,10 +126,14 @@ extract_filter_mock <- function(question, data) {
 
 apply_filter <- function(filter, data) {
   keep <- rep(TRUE, nrow(data))
-  if (!is.na(filter$condition)) keep <- keep & (data$condition == filter$condition)
-  if (!is.na(filter$body_site)) keep <- keep & (data$body_site == filter$body_site)
-  if (!is.na(filter$taxon))     keep <- keep & (data$taxon == filter$taxon)
-  if (!is.na(filter$direction)) keep <- keep & (data$direction == filter$direction)
+  if (!is.na(filter$condition))
+    keep <- keep & (tolower(data$condition) == tolower(filter$condition))
+  if (!is.na(filter$body_site))
+    keep <- keep & (tolower(data$body_site) == tolower(filter$body_site))
+  if (!is.na(filter$taxon))
+    keep <- keep & (tolower(data$taxon) == tolower(filter$taxon))
+  if (!is.na(filter$direction))
+    keep <- keep & (tolower(data$direction) == tolower(filter$direction))
   data[keep & !is.na(keep), ]
 }
 

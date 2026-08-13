@@ -55,3 +55,6 @@ data/*.duckdb
 renv/library/
 renv/staging/
 renv/.cache/
+
+# Env
+.env

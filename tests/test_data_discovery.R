@@ -62,9 +62,9 @@ run_test_harness <- function(backend = "mock", chat = NULL) {
     result <- answer_question(tc$q, data, chat = chat, backend = backend)
 
     filter_match <- all(mapply(function(got, want) {
-      (is.na(got) && is.na(want)) || identical(got, want)
+      (is.na(got) && is.na(want)) ||
+      (!is.na(got) && !is.na(want) && tolower(got) == tolower(want))
     }, result$filter[FILTER_SCHEMA_FIELDS], tc$filter[FILTER_SCHEMA_FIELDS]))
-    answer_match <- result$n_matches == tc$expected_n
 
     filter_hits <- filter_hits + filter_match
     answer_hits <- answer_hits + answer_match

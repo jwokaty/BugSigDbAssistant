@@ -1,19 +1,44 @@
 services:
   app:
     build: .
+    working_dir: /srv/shiny-server/BugSigDbAssistant
     ports:
       - "3838:3838"
     volumes:
-      - .:/srv/shiny-server/BugSigDBAssistant
+      - .:/srv/shiny-server/BugSigAssistant
     env_file:
       - .Renviron
     environment:
       - EMBEDDING_ENDPOINT=http://ollama:11434
+      - LLM_ENDPOINT=https://llm.jetstream-cloud.org:11435/gpt-oss-120b/v1/
+      - LLM_MODEL=gpt-oss-120b
+      - LLM_API_KEY=placeholder
     depends_on:
       ollama:
         condition: service_healthy
       ollama-init:
         condition: service_completed_successfully
+      tunnel:
+        condition: service_healthy
+
+  tunnel:
+    image: alpine
+    environment:
+      - PONS1_IP=${PONS1_IP}
+    volumes:
+      - ./docker/tunnel.sh:/tunnel.sh:ro
+      - ${SSH_KEY_PATH}:/root/.ssh/jetstream2:ro
+    command: sh /tunnel.sh
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 11435 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      default:
+        aliases:
+          - llm.jetstream-cloud.org
 
   ollama:
     image: ollama/ollama
@@ -24,6 +49,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   ollama-init:
     image: ollama/ollama
@@ -35,7 +61,7 @@ services:
     environment:
       - OLLAMA_HOST=http://ollama:11434
     entrypoint: ["ollama", "pull", "nomic-embed-text"]
-    restart: "no"    
+    restart: "no"
 
 volumes:
   ollama_data:
